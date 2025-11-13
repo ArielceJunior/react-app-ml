@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Identificador from './Identificador.jsx';
+import Treinamento from './Treinamento.jsx';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // Define a tela inicial como 'identificar'
+  const [view, setView] = useState('identificar'); 
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Hello React ML</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="container mt-4">
+      <h1 className="mb-4">⚡ App de Identificação de Aparelhos (IA)</h1>
+
+      {/* Navegação por abas */}
+      <nav className="nav nav-tabs mb-3">
+        <button
+          className={`nav-link ${view === 'identificar' ? 'active' : ''}`}
+          onClick={() => setView('identificar')}
+        >
+          Identificar
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+        <button
+          className={`nav-link ${view === 'treinamento' ? 'active' : ''}`}
+          onClick={() => setView('treinamento')}
+        >
+          Treinamento
+        </button>
+      </nav>
+
+      {/* Renderiza a tela correta com base no estado 'view' */}
+      <div className="card">
+        <div className="card-body">
+          {view === 'identificar' ? <Identificador /> : <Treinamento />}
+        </div>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
