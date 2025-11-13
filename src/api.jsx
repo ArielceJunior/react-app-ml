@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const api = axios.create({
   
-  baseURL: 'http://localhost:5000/', 
+  baseURL: 'https://ariflaskml-dff5g9c7bdhyhsc5.brazilsouth-01.azurewebsites.net/', 
 });
 
 export default api;
