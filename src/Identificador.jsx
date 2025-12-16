@@ -1,60 +1,92 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import api from './api'; // Importa nossa configuração do Axios
+import api from './api'; // Sua configuração do Axios
 
 function Identificador() {
-  const [status, setStatus] = useState('Ocioso');
-  const [resultado, setResultado] = useState(null); // Armazena o resultado da IA
+  const [status, setStatus] = useState('Ocioso. Clique para identificar.');
+  const [loading, setLoading] = useState(false);
+  const [resultado, setResultado] = useState(null);
 
-  // Função chamada pelo botão "Identificar"
   const handleIdentificar = async () => {
-    setStatus('Aguardando sinal... Ligue o aparelho! (Pode levar até 5 min)');
-    setResultado(null); // Limpa o resultado anterior
+    setLoading(true);
+    setStatus('Lendo consumo em tempo real...');
+    setResultado(null);
 
     try {
-      // Chama a API do backend (app.py) e espera a resposta
+      // Chama a rota nova que criamos no Python
       const response = await api.get('/api/identificar');
+      
+      // O backend retorna: { identificado: "Nome", watts_atuais: 123.4, diferenca: 5.0 }
+      setResultado(response.data);
+      setStatus('Análise concluída.');
+      setLoading(false);
 
-      if (response.data.success) {
-        setStatus('Identificação Concluída!');
-        setResultado(response.data); // Salva o objeto completo do resultado
-      } else {
-        setStatus(`Erro: ${response.data.error}`);
-      }
     } catch (error) {
       console.error('Erro ao identificar:', error);
-      setStatus(`Erro de conexão com o servidor. O 'app.py' está rodando?`);
+      setLoading(false);
+      
+      if (error.response && error.response.status === 404) {
+        setStatus("Erro 404: A rota '/api/identificar' não foi encontrada. Reinicie o Python.");
+      } else {
+        setStatus("Erro de conexão. Verifique se o Backend está rodando.");
+      }
     }
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 container" style={{ maxWidth: '600px' }}>
+      <h3 className="mb-4">Identificador de Aparelhos</h3>
+
       <div className="mb-3">
-        <button className="btn btn-success btn-lg" onClick={handleIdentificar}>
-          Identificar Aparelho
+        <button 
+          className="btn btn-success btn-lg w-100" 
+          onClick={handleIdentificar}
+          disabled={loading}
+        >
+          {loading ? (
+            <span><span className="spinner-border spinner-border-sm me-2"></span>Analisando...</span>
+          ) : (
+            "🔍 Identificar O Que Está Ligado Agora"
+          )}
         </button>
       </div>
 
-      {/* Área de Status */}
-      <div className="mt-4">
-        <h2>Status:</h2>
-        <p className="alert alert-info">{status}</p>
+      {/* Área de Status Simples */}
+      <div className="alert alert-secondary text-center">
+        {status}
       </div>
 
-      {/* Área de Resultado (só aparece se 'resultado' não for nulo) */}
+      {/* Cartão de Resultado */}
       {resultado && (
-        <div className="card mt-4">
-          <div className="card-body">
-            <h2 className="card-title">Resultado da Predição:</h2>
-            <h3 className="alert alert-primary">
-              Aparelho: <strong>{resultado.aparelho}</strong>
-            </h3>
-            <p>
-              Nível de Confiança: <strong>{resultado.confianca}</strong>
-            </p>
+        <div className={`card mt-4 border-${resultado.identificado === "Desconhecido" ? "warning" : "primary"}`}>
+          <div className="card-header bg-transparent">
+            Resultado da Análise
+          </div>
+          <div className="card-body text-center">
+            
+            <h5 className="text-muted mb-1">O aparelho parece ser:</h5>
+            <h2 className="card-title text-primary fw-bold display-6">
+              {resultado.identificado}
+            </h2>
+            
             <hr />
-            <p>Features Detectadas:</p>
-            <pre>{JSON.stringify(resultado.features_detectadas, null, 2)}</pre>
+            
+            <div className="row mt-3">
+              <div className="col-6">
+                <small className="text-muted">Consumo Atual</small>
+                <p className="h5">{resultado.watts_atuais?.toFixed(1)} W</p>
+              </div>
+              <div className="col-6">
+                <small className="text-muted">Diferença (Erro)</small>
+                <p className="h5 text-muted">± {resultado.diferenca?.toFixed(1)} W</p>
+              </div>
+            </div>
+
+            {resultado.identificado === "Desconhecido" && (
+              <div className="alert alert-warning mt-3 mb-0">
+                <small>{resultado.detalhe}</small>
+              </div>
+            )}
           </div>
         </div>
       )}
