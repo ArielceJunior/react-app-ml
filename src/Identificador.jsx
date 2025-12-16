@@ -39,14 +39,14 @@ function Identificador() {
 
       <div className="mb-3">
         <button 
-          className="btn btn-success btn-lg w-100" 
+          className="btn btn-success btn-lg w-50" 
           onClick={handleIdentificar}
           disabled={loading}
         >
           {loading ? (
             <span><span className="spinner-border spinner-border-sm me-2"></span>Analisando...</span>
           ) : (
-            "🔍 Identificar O Que Está Ligado Agora"
+            "🔍 Identificar"
           )}
         </button>
       </div>
